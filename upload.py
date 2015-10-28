@@ -71,20 +71,29 @@ if __name__ == "__main__":
 
     # begin upload
     if os.path.isdir(args.path):
-        print 'isdir'
-        pass
+        all_files = os.listdir(args.path)
+        image_files = [img for img in all_files if img.rsplit('.',1)[1].lower() in ['jpg','gif','png']]
+        total_count = len(image_files)
+        print "Uploading %i" % total_count
+
+        count = 0
+        for i in image_files:
+            f = open("%s/%s" % (args.path, i),'rb')
+            files = {"original":f}
+            gal_resp = requests.post(target_host + "/i/api/user/gallery/%s/upload/" % (gal_uuid,), headers=target_headers, files=files)
+            if gal_resp.status_code == 201:
+                count +=1
+                print "%i/%i Uploaded" % (count, total_count)
+            else:
+                print "Upload Fail for %s" % i
         # handle dir
     else:
         f = open(args.path,'rb')
         files = {"original":f}
-        upload_headers = target_headers
         gal_resp = requests.post(target_host + "/i/api/user/gallery/%s/upload/" % (gal_uuid,), headers=target_headers, files=files)
-        # print gal_resp.text
-        # data = open("data", 'w')
-        # data.write(gal_resp.text)
-        # data.close()
-        print gal_resp.status_code
+        if gal_resp.status_code == 201:
+            print "Single Image Uploaded!"
+        else:
+            print "Upload Fail for %s" % args.path
 
-    print gal_uuid
-    # gal_resp = requests.post(target_host + "/i/api/user/gallery/%s/" % (gal_uuid,), headers=target_headers, data="TBD")
 
